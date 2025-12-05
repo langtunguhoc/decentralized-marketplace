@@ -30,7 +30,7 @@ node ./ipfs/setup.js
 ```
 
 - Để test thành công không lấy CID được output và đưa vào các nhà cung cấp IPFS:
-https://cloudflare-ipfs.com/ipfs/<CID>
-https://ipfs.io/ipfs/<CID>
-https://dweb.link/ipfs/<CID>
-https://w3s.link/ipfs/<CID>
+    - https://cloudflare-ipfs.com/ipfs/"CID"
+    - https://ipfs.io/ipfs/"CID"
+    - https://dweb.link/ipfs/"CID"
+    - https://w3s.link/ipfs/"CID"
