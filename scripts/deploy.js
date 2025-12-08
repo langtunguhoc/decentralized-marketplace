@@ -40,6 +40,23 @@ async function main() {
   console.log(" AccessPass Address   :", accessPassAddress);
   console.log(" Marketplace Address  :", marketplaceAddress);
   console.log("=====================================\n");
+  const fs = require("fs");
+  const path = require("path");
+
+  // Tạo đối tượng chứa địa chỉ
+  const addresses = {
+    accessPass: accessPassAddress,
+    marketplace: marketplaceAddress,
+  };
+
+  // Lưu vào file JSON ở thư mục gốc (hoặc thư mục frontend nếu muốn)
+  const addressFile = path.join(__dirname, "../contract-address.json"); 
+  
+  fs.writeFileSync(
+    addressFile,
+    JSON.stringify(addresses, null, 2)
+  );
+  console.log(`> Addresses saved to: ${addressFile}`);
 }
 
 // We recommend this pattern to be able to use async/await everywhere
