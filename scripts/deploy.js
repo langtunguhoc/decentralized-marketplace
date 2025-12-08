@@ -7,22 +7,39 @@
 const hre = require("hardhat");
 
 async function main() {
-  const currentTimestampInSeconds = Math.round(Date.now() / 1000);
-  const unlockTime = currentTimestampInSeconds + 60;
+  console.log("=====================================");
+  console.log("DEPLOY SMART CONTRACT");
+  console.log("=====================================");
+  console.log("DEPLOY ACCESSPASS");
 
-  const lockedAmount = hre.ethers.parseEther("0.001");
+  const AccessPass = await hre.ethers.getContractFactory("AccessPass");
+  const accessPass = await AccessPass.deploy();
+  await accessPass.waitForDeployment();
 
-  const lock = await hre.ethers.deployContract("Lock", [unlockTime], {
-    value: lockedAmount,
-  });
+  const accessPassAddress = await accessPass.getAddress();
 
-  await lock.waitForDeployment();
+  console.log("ACCESSPASS deployed at: ", accessPassAddress,"\n");
 
-  console.log(
-    `Lock with ${ethers.formatEther(
-      lockedAmount
-    )}ETH and unlock timestamp ${unlockTime} deployed to ${lock.target}`
-  );
+  console.log("DEPLOYING MARKETPLACE...");
+
+  const Marketplace = await hre.ethers.getContractFactory("Marketplace");
+  const marketplace = await Marketplace.deploy(accessPassAddress);
+  await marketplace.waitForDeployment();
+
+  const marketplaceAddress = await marketplace.getAddress();
+
+  console.log("MARKETPLACE deployed at: ",marketplaceAddress,"\n");
+  console.log("Linking marketplace to accessPass");
+  const tx = await accessPass.setMarketplace(marketplaceAddress);
+  await tx.wait();
+
+  console.log("Marketplace set in accessPass");
+  console.log("=====================================");
+  console.log(" Deployment Completed Successfully!");
+  console.log("=====================================");
+  console.log(" AccessPass Address   :", accessPassAddress);
+  console.log(" Marketplace Address  :", marketplaceAddress);
+  console.log("=====================================\n");
 }
 
 // We recommend this pattern to be able to use async/await everywhere
