@@ -34,3 +34,5 @@ node ./ipfs/setup.js
     - https://ipfs.io/ipfs/"CID"
     - https://dweb.link/ipfs/"CID"
     - https://w3s.link/ipfs/"CID"
+
+- Frontend khi code cần lưu ý hàm updateListing, khi làm hàm thay đổi thông tin sản phẩm KHÔNG truyền tham số rỗng mà phải lấy tham số cũ từ sản phẩm vd: "const currentProduct = await market.products(1);"
