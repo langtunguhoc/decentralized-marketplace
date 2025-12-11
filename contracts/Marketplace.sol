@@ -61,7 +61,8 @@ contract Marketplace is ReentrancyGuard {
     {
         Product storage p = products[id];
         require(msg.sender == p.seller , "Not seller");
-
+        require(p.soldCount == 0, "Cannot update sold product");
+        require(newPrice > 0, "Price must be > 0");
         p.price = newPrice;
         p.previewCid = newPreviewCid;
         p.metadataCid = newMetadataCid;
