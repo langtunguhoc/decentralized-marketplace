@@ -11,9 +11,12 @@ async function main() {
   console.log("DEPLOY SMART CONTRACT");
   console.log("=====================================");
   console.log("DEPLOY ACCESSPASS");
+const [deployer] = await hre.ethers.getSigners();
+const nonce = await hre.ethers.provider.getTransactionCount(deployer.address);
 
+console.log("Nonce hiện tại:", nonce);
   const AccessPass = await hre.ethers.getContractFactory("AccessPass");
-  const accessPass = await AccessPass.deploy();
+  const accessPass = await AccessPass.deploy({ gasLimit: 3000000 });
   await accessPass.waitForDeployment();
 
   const accessPassAddress = await accessPass.getAddress();
@@ -23,7 +26,7 @@ async function main() {
   console.log("DEPLOYING MARKETPLACE...");
 
   const Marketplace = await hre.ethers.getContractFactory("Marketplace");
-  const marketplace = await Marketplace.deploy(accessPassAddress);
+  const marketplace = await Marketplace.deploy(accessPassAddress,{ gasLimit: 3000000 });
   await marketplace.waitForDeployment();
 
   const marketplaceAddress = await marketplace.getAddress();
