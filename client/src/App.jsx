@@ -10,24 +10,48 @@ function App() {
   const [account, setAccount] = useState(null);
   const [contract, setContract] = useState(null);
 
-  // Connect to MetaMask
-  const connectWallet = async () => {
-    if (window.ethereum) {
-      const provider = new ethers.BrowserProvider(window.ethereum);
-      const signer = await provider.getSigner();
-      setAccount(await signer.getAddress());
+  // --- 🛡️ SECURITY: Global Right-Click Ban ---
+  useEffect(() => {
+    const handleContextMenu = (e) => {
+      e.preventDefault(); // Blocks the "Save As" menu
+    };
+    document.addEventListener("contextmenu", handleContextMenu);
+    return () => document.removeEventListener("contextmenu", handleContextMenu);
+  }, []);
+  // ---------------------------------------------
 
-      // Connect to the Marketplace Contract
-      const market = new ethers.Contract(
-        contractAddress.marketplace,
-        MarketplaceAbi.abi,
-        signer
-      );
-      setContract(market);
-    } else {
-      alert("Please install MetaMask!");
-    }
-  };
+  const connectWallet = async () => {
+      if (window.ethereum) {
+        try {
+          // 1. Force Switch to Amoy
+          await window.ethereum.request({
+            method: "wallet_switchEthereumChain",
+            params: [{ chainId: "0x13882" }], // Hex for 80002
+          });
+
+          const provider = new ethers.BrowserProvider(window.ethereum);
+          const signer = await provider.getSigner();
+          setAccount(await signer.getAddress());
+
+          // ... rest of your code
+          const market = new ethers.Contract(
+            contractAddress.marketplace,
+            MarketplaceAbi.abi,
+            signer
+          );
+          setContract(market);
+        } catch (error) {
+          // Error 4902 means the chain hasn't been added to MetaMask
+          if (error.code === 4902) {
+              alert("Please add Polygon Amoy Testnet to MetaMask!");
+          } else {
+              console.error(error);
+          }
+        }
+      } else {
+        alert("Please install MetaMask!");
+      }
+    };
 
   return (
     <div style={{ padding: "20px", fontFamily: "Arial" }}>
@@ -45,7 +69,6 @@ function App() {
 
       <hr style={{ margin: "20px 0" }} />
       
-      {/* SELLER SECTION */}
       <div style={{ marginBottom: "40px" }}>
         <h2>📤 Seller Zone (Upload)</h2>
         {contract ? <UploadProduct contract={contract} /> : <p>Please connect wallet to list items.</p>}
@@ -53,7 +76,6 @@ function App() {
 
       <hr style={{ margin: "20px 0" }} />
 
-      {/* BUYER SECTION */}
       <div>
         <h2>🛍️ Buyer Zone (Marketplace)</h2>
         {contract ? <ProductList contract={contract} account={account} /> : <p>Connect wallet to view items.</p>}

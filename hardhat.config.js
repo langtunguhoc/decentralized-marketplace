@@ -6,7 +6,7 @@ module.exports = {
   networks: {
     amoy: {
       url: process.env.POLYGON_RPC_URL,
-      accounts: [process.env.PRIVATE_KEY, process.env.PRIVATE_KEY_BUYER],
+      accounts: [process.env.PRIVATE_KEY],// process.env.PRIVATE_KEY_BUYER],
       chainId: 80002,
       gasPrice: "auto",     // để RPC tự set
       gas: 3000000

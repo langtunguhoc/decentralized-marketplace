@@ -12,140 +12,143 @@ npx hardhat node
 npx hardhat run scripts/deploy.js
 ```
 
+# 🛡️ Decentralized Secure Storage (Lit Protocol + IPFS)
+
+Ứng dụng chia sẻ file bảo mật: Dùng **Lit Protocol** để mã hóa file, **IPFS** để lưu trữ, và **NFT** trên mạng **Polygon Amoy** để kiểm soát quyền truy cập.
+
+---
+
 ## 🛠️ 1. Yêu cầu cài đặt (Prerequisites)
 
 Trước khi chạy, máy cần có:
+* [Node.js](https://nodejs.org/) (v18 trở lên).
+* [Git](https://git-scm.com/).
+* [MetaMask](https://metamask.io/) Extension trên trình duyệt.
 
-  * [Node.js](https://nodejs.org/) (v18+).
-  * [Git](https://git-scm.com/).
-  * [MetaMask](https://metamask.io/) Extension trên trình duyệt.
-
------
+---
 
 ## 📂 2. Cài đặt thư viện
 
-Mở terminal tại thư mục dự án và chạy lần lượt các lệnh sau để cài thư viện cho cả 3 phần (Root, Server, Client):
+Mở terminal tại thư mục dự án và chạy lần lượt các lệnh sau:
 
 ```bash
 # 1. Cài đặt cho Blockchain (Root)
 npm install
 
-# 2. Cài đặt cho Backend (Server)
+# 2. Cài đặt cho Backend (Server Proxy IPFS)
 cd server
 npm install
 
-# 3. Cài đặt cho Frontend (Client)
+# 3. Cài đặt cho Frontend (Client React App)
 cd ../client
 npm install
 ```
 
------
+---
 
 ## 🔑 3. Cấu hình biến môi trường (.env)
 
-Bạn cần tạo 2 file `.env` (một ở root folder và một ở server folder).
-
 ### **A. Tại thư mục gốc (`/`)**
-
-Tạo file `.env` và dán nội dung sau (Key giả cho Localhost):
+Tạo file `.env` để cấu hình deploy lên mạng Amoy:
 
 ```env
-# Key Account #0 (Seller)
-PRIVATE_KEY="0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80"
-# Key Account #1 (Buyer)
-PRIVATE_KEY_BUYER="0x5de4111afa1a4b94908f83103eb1f1706367c2e68ca870fc3fb9a804cdab365a"
+POLYGON_RPC_URL="https://rpc-amoy.polygon.technology/"
+PRIVATE_KEY="dan_private_key_vi_metamask_cua_ban_vao_day"
 ```
 
 ### **B. Tại thư mục Server (`/server/`)**
-
-Tạo file `.env` và dán nội dung sau (**Cần tự lấy Key Pinata của bạn**):
+Tạo file `.env` để cấu hình IPFS (Pinata).
+*(Lấy Key tại: [https://app.pinata.cloud/developers/api-keys](https://app.pinata.cloud/developers/api-keys))*
 
 ```env
-# Kết nối Blockchain Local
-RPC_URL="http://127.0.0.1:8545/"
 PORT=3001
-
-# IPFS Keys (Lấy tại https://app.pinata.cloud/developers/api-keys)
-PINATA_JWT=your_pinata_jwt_here
+PINATA_JWT=dan_pinata_jwt_token_cua_ban_vao_day
 PINATA_GATEWAY=gateway.pinata.cloud
 ```
 
------
+---
 
-## 🚀 4. Hướng dẫn chạy (Run Demo)
+## 🚀 4. Hướng dẫn chạy (Run App)
 
-Mở **3 Terminal** riêng biệt để chạy song song toàn bộ hệ thống.
-
-### **Terminal 1: Blockchain Local**
-
-Chạy blockchain giả lập trên máy:
+### **Bước 1: Deploy Smart Contract**
+Chạy lệnh này từ thư mục gốc (Root):
 
 ```bash
-npx hardhat node
+npx hardhat run scripts/deploy.js --network amoy
 ```
 
-> **Lưu ý:** Giữ terminal này luôn chạy. Nó sẽ in ra 20 tài khoản ví test kèm Private Key.
+> ⚠️ **QUAN TRỌNG:** Sau khi deploy thành công, bạn **BẮT BUỘC** phải copy file ABI và Address mới vào thư mục Frontend.
+>
+> **Lệnh Copy (Windows):**
+> ```cmd
+> copy artifacts\contracts\AccessPass.sol\AccessPass.json client\src\abi\
+> copy artifacts\contracts\Marketplace.sol\Marketplace.json client\src\abi\
+> copy contract-address.json client\src\abi\
+> ```
+>
+> **Lệnh Copy (Mac/Linux):**
+> ```bash
+> cp artifacts/contracts/AccessPass.sol/AccessPass.json client/src/abi/
+> cp artifacts/contracts/Marketplace.sol/Marketplace.json client/src/abi/
+> cp contract-address.json client/src/abi/
+> ```
 
-### **Terminal 2: Deploy & Backend**
-
-Deploy smart contract và bật server bảo vệ file:
+### **Bước 2: Khởi chạy Backend**
+Mở một terminal mới:
 
 ```bash
-# 1. Deploy Contract lên mạng Local
-npx hardhat run scripts/deploy.js --network localhost
-
-# 2. (BẮT BUỘC) Copy file địa chỉ contract mới sang Frontend
-# Chạy lệnh này trên Windows:
-copy contract-address.json client\src\abi\
-
-# 3. Khởi động Server
 cd server
 node index.js
 ```
+> ✅ Server sẽ báo: `Server running on http://localhost:3001`
 
-> Server sẽ báo: `✅ Gatekeeper Server running on http://localhost:3001`
-
-### **Terminal 3: Frontend**
-
-Chạy giao diện web React:
+### **Bước 3: Khởi chạy Frontend**
+Mở một terminal mới khác:
 
 ```bash
 cd client
 npm run dev
 ```
+> 🌐 Truy cập tại: `http://localhost:5173`
 
-> Truy cập tại: `http://localhost:5173`
+---
 
------
+## 🦊 5. Setup MetaMask (Polygon Amoy)
 
-## 🦊 5. Setup MetaMask để Test
+1.  **Thêm mạng Amoy:**
+    * Mở MetaMask -> Add Network -> Manually.
+    * **Network Name:** `Polygon Amoy Testnet`
+    * **RPC URL:** `https://rpc-amoy.polygon.technology`
+    * **Chain ID:** `80002`
+    * **Currency Symbol:** `POL`
+    * **Block Explorer:** `https://amoy.polygonscan.com`
 
-Vì chạy trên mạng Local, ví MetaMask của bạn chưa có tiền và chưa biết mạng này.
+2.  **Lấy tiền Test (Faucet):**
+    * Vào [Polygon Faucet](https://faucet.polygon.technology/) hoặc [Chainlink Faucet](https://faucets.chain.link/polygon-amoy).
+    * Dán địa chỉ ví để nhận **POL** miễn phí.
 
-1.  **Thêm mạng Localhost:**
-      * Mở MetaMask -\> Add Network -\> Manually.
-      * **RPC URL:** `http://127.0.0.1:8545`
-      * **Chain ID:** `31337`
-      * **Symbol:** `ETH`
-2.  **Nhập ví Test (Import Account):**
-      * Vào **Terminal 1**, copy Private Key của `Account #0` -\> Import vào MetaMask (Đặt tên: **Seller**).
-      * Copy Private Key của `Account #1` -\> Import vào MetaMask (Đặt tên: **Buyer**).
-
------
+---
 
 ## ✅ 6. Kịch bản Test (Walkthrough)
 
-1.  **Seller (Account \#0):**
-      * Kết nối ví Seller.
-      * Điền giá, chọn ảnh và file PDF. Bấm **"List Product"**.
-2.  **Buyer (Account \#1):**
-      * Chuyển ví sang Buyer trên MetaMask.
-      * **Refresh trang web (F5)**.
-      * Kéo xuống dưới, bấm **"Buy Now"** -\> Confirm giao dịch.
-3.  **Verify:**
-      * Nút mua sẽ đổi thành **"🔓 View Content"**.
-      * Bấm vào để xem file PDF (Chỉ Buyer mới xem được, ví khác sẽ bị báo lỗi).
+1.  **Người bán (Seller):**
+    * Kết nối ví (Mạng Amoy).
+    * Tab **Upload**: Chọn ảnh Preview, File Bí mật, Điền giá -> Bấm **List Product**.
+    * MetaMask: Ký (Sign) để mã hóa -> Confirm để trả phí gas.
 
------
+2.  **Người mua (Buyer):**
+    * Chuyển sang ví khác. Refresh trang (F5).
+    * Bấm **Buy Now** -> Trả tiền mua.
 
-**Lưu ý quan trọng:** Nếu tắt `npx hardhat node`, blockchain sẽ bị reset. Bạn phải chạy lại Deploy (Terminal 2) và copy lại file json địa chỉ thì web mới chạy đúng.
+3.  **Xem file (Decrypt):**
+    * Nút đổi thành **🔓 Decrypt & View**.
+    * Bấm vào -> Ký (Sign) xác nhận quyền sở hữu -> File hiện ra.
+
+---
+
+## 🧹 Mẹo: Xóa dữ liệu cũ
+
+* **Cách 1 (Nhanh):** Sửa file `client/src/ProductList.jsx`.
+    Tìm vòng lặp `for`, thêm dòng: `if (i < 10) continue;` (Thay số 10 bằng ID mới nhất).
+
+* **Cách 2 (Sạch):** Deploy lại Contract (Bước 1) và copy lại file JSON địa chỉ.
