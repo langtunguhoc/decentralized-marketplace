@@ -1,69 +1,54 @@
-// We require the Hardhat Runtime Environment explicitly here. This is optional
-// but useful for running the script in a standalone fashion through `node <script>`.
-//
-// You can also run a script with `npx hardhat run <script>`. If you do that, Hardhat
-// will compile your contracts, add the Hardhat Runtime Environment's members to the
-// global scope, and execute the script.
-const hre = require("hardhat");
+const { ethers } = require("hardhat");
+const deployConfig = require("./deploy.config");
+const fs = require("fs");
+const path = require("path");
 
 async function main() {
-  console.log("=====================================");
-  console.log("DEPLOY SMART CONTRACT");
-  console.log("=====================================");
-  console.log("DEPLOY ACCESSPASS");
-const [deployer] = await hre.ethers.getSigners();
-const nonce = await hre.ethers.provider.getTransactionCount(deployer.address);
+  const deployed = {};
 
-console.log("Nonce hiện tại:", nonce);
-  const AccessPass = await hre.ethers.getContractFactory("AccessPass");
-  const accessPass = await AccessPass.deploy({ gasLimit: 3000000 });
-  await accessPass.waitForDeployment();
+  for (const key of Object.keys(deployConfig)) {
+    const { contract, args } = deployConfig[key];
 
-  const accessPassAddress = await accessPass.getAddress();
+    console.log(`\nDeploying ${contract}...`);
 
-  console.log("ACCESSPASS deployed at: ", accessPassAddress,"\n");
+    const Factory = await ethers.getContractFactory(contract);
 
-  console.log("DEPLOYING MARKETPLACE...");
+    const resolvedArgs =
+      typeof args === "function" ? args(deployed) : args;
 
-  const Marketplace = await hre.ethers.getContractFactory("Marketplace");
-  const marketplace = await Marketplace.deploy(accessPassAddress,{ gasLimit: 3000000 });
-  await marketplace.waitForDeployment();
+    const instance = await Factory.deploy(...resolvedArgs);
+    await instance.waitForDeployment();
 
-  const marketplaceAddress = await marketplace.getAddress();
+    const address = await instance.getAddress();
+    deployed[key] = address;
 
-  console.log("MARKETPLACE deployed at: ",marketplaceAddress,"\n");
-  console.log("Linking marketplace to accessPass");
-  const tx = await accessPass.setMarketplace(marketplaceAddress);
-  await tx.wait();
+    console.log(`${contract} deployed at: ${address}`);
+  }
 
-  console.log("Marketplace set in accessPass");
-  console.log("=====================================");
-  console.log(" Deployment Completed Successfully!");
-  console.log("=====================================");
-  console.log(" AccessPass Address   :", accessPassAddress);
-  console.log(" Marketplace Address  :", marketplaceAddress);
-  console.log("=====================================\n");
-  const fs = require("fs");
-  const path = require("path");
+  // Post-deploy wiring
+  if (deployed.AccessPass && deployed.Marketplace) {
+    const accessPass = await ethers.getContractAt(
+      "AccessPass",
+      deployed.AccessPass
+    );
+    const tx = await accessPass.setMarketplace(deployed.Marketplace);
+    await tx.wait();
+    console.log("Marketplace set in AccessPass");
+  }
 
-  // Tạo đối tượng chứa địa chỉ
   const addresses = {
-    accessPass: accessPassAddress,
-    marketplace: marketplaceAddress,
+    localhost: {
+      Marketplace: deployed.Marketplace,
+      AccessPass: deployed.AccessPass,
+    },
   };
 
-  // Lưu vào file JSON ở thư mục gốc (hoặc thư mục frontend nếu muốn)
-  const addressFile = path.join(__dirname, "../contract-address.json"); 
-  
-  fs.writeFileSync(
-    addressFile,
-    JSON.stringify(addresses, null, 2)
-  );
-  console.log(`> Addresses saved to: ${addressFile}`);
+  const outputPath = path.join(__dirname, "..", "addresses.json");
+  fs.writeFileSync(outputPath, JSON.stringify(addresses, null, 2));
+
+  console.log("Addresses saved to addresses.json");
 }
 
-// We recommend this pattern to be able to use async/await everywhere
-// and properly handle errors.
 main().catch((error) => {
   console.error(error);
   process.exitCode = 1;
