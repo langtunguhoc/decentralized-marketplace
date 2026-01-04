@@ -38,9 +38,7 @@ contract AccessPass is ERC721, Ownable{
     }
 
     function _update(address to, uint256 tokenId, address auth) internal override returns (address) {
-        address from = _ownerOf(tokenId);
-
-        address result = super._update(to, tokenId, auth);
+        address from = super._update(to, tokenId, auth);
 
         uint256 productId = tokenToProduct[tokenId];
 
@@ -50,6 +48,6 @@ contract AccessPass is ERC721, Ownable{
         if(to != address(0)){
             productOwners[productId][to]++;
         }
-        return result;
+        return from;
     }
 }

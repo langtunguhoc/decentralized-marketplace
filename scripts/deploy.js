@@ -1,32 +1,54 @@
-// We require the Hardhat Runtime Environment explicitly here. This is optional
-// but useful for running the script in a standalone fashion through `node <script>`.
-//
-// You can also run a script with `npx hardhat run <script>`. If you do that, Hardhat
-// will compile your contracts, add the Hardhat Runtime Environment's members to the
-// global scope, and execute the script.
-const hre = require("hardhat");
+const { ethers } = require("hardhat");
+const deployConfig = require("./deploy.config");
+const fs = require("fs");
+const path = require("path");
 
 async function main() {
-  const currentTimestampInSeconds = Math.round(Date.now() / 1000);
-  const unlockTime = currentTimestampInSeconds + 60;
+  const deployed = {};
 
-  const lockedAmount = hre.ethers.parseEther("0.001");
+  for (const key of Object.keys(deployConfig)) {
+    const { contract, args } = deployConfig[key];
 
-  const lock = await hre.ethers.deployContract("Lock", [unlockTime], {
-    value: lockedAmount,
-  });
+    console.log(`\nDeploying ${contract}...`);
 
-  await lock.waitForDeployment();
+    const Factory = await ethers.getContractFactory(contract);
 
-  console.log(
-    `Lock with ${ethers.formatEther(
-      lockedAmount
-    )}ETH and unlock timestamp ${unlockTime} deployed to ${lock.target}`
-  );
+    const resolvedArgs =
+      typeof args === "function" ? args(deployed) : args;
+
+    const instance = await Factory.deploy(...resolvedArgs);
+    await instance.waitForDeployment();
+
+    const address = await instance.getAddress();
+    deployed[key] = address;
+
+    console.log(`${contract} deployed at: ${address}`);
+  }
+
+  // Post-deploy wiring
+  if (deployed.AccessPass && deployed.Marketplace) {
+    const accessPass = await ethers.getContractAt(
+      "AccessPass",
+      deployed.AccessPass
+    );
+    const tx = await accessPass.setMarketplace(deployed.Marketplace);
+    await tx.wait();
+    console.log("Marketplace set in AccessPass");
+  }
+
+  const addresses = {
+    localhost: {
+      Marketplace: deployed.Marketplace,
+      AccessPass: deployed.AccessPass,
+    },
+  };
+
+  const outputPath = path.join(__dirname, "..", "addresses.json");
+  fs.writeFileSync(outputPath, JSON.stringify(addresses, null, 2));
+
+  console.log("Addresses saved to addresses.json");
 }
 
-// We recommend this pattern to be able to use async/await everywhere
-// and properly handle errors.
 main().catch((error) => {
   console.error(error);
   process.exitCode = 1;
