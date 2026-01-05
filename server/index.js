@@ -1,7 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const multer = require('multer');
-const https = require('https'); // <--- NEW: Required for proxying
+const https = require('https'); 
 const { uploadToIPFS } = require('./pinata'); 
 require('dotenv').config();
 
@@ -56,17 +56,28 @@ app.post('/api/upload', uploadFields, async (req, res) => {
 });
 
 // ==================================================================
-// ROUTE 2: DOWNLOAD PROXY (Fixes CORS Error)
-// Browser requests this -> Server requests IPFS -> Server sends back
+// ROUTE 2: DOWNLOAD PROXY (✅ FIXED)
 // ==================================================================
 app.get('/api/fetch/:cid', (req, res) => {
     const { cid } = req.params;
-    const ipfsUrl = `https://gateway.pinata.cloud/ipfs/${cid}`;
 
-    console.log(`[Proxy] Fetching ${cid} from IPFS...`);
+    // 🛡️ FIX: Use Dedicated Gateway if available, otherwise use a generic public one.
+    // Pinata Gateway env var is usually just the domain: "example.mypinata.cloud"
+    const gateway = process.env.PINATA_GATEWAY || 'ipfs.io'; 
+    const ipfsUrl = `https://${gateway}/ipfs/${cid}`;
+
+    console.log(`[Proxy] Fetching ${cid} from: ${ipfsUrl}`);
 
     https.get(ipfsUrl, (stream) => {
-        // Forward the content type header so the browser knows it's a blob
+        // Handle non-200 status codes (like 404 or 504)
+        if (stream.statusCode !== 200) {
+            console.error(`[Proxy] Gateway returned status: ${stream.statusCode}`);
+            // Consume the stream to free memory
+            stream.resume();
+            return res.status(stream.statusCode).json({ error: "Gateway error" });
+        }
+
+        // Forward the content type header
         if (stream.headers['content-type']) {
             res.setHeader('Content-Type', stream.headers['content-type']);
         } else {
@@ -75,6 +86,7 @@ app.get('/api/fetch/:cid', (req, res) => {
         
         // Pipe the data directly to the client
         stream.pipe(res);
+
     }).on('error', (err) => {
         console.error("[Proxy] IPFS Download Error:", err.message);
         res.status(500).json({ error: "Failed to fetch from IPFS" });

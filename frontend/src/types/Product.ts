@@ -1,10 +1,11 @@
 export interface Product {
   id: number;
   seller: string;
-  price: string;
+  price: bigint;
   isActive: boolean;
   previewCid: string;
-  metadataCid: string;
+  productCid: string;
   contentType: string;
+  encryptedKey: string
   soldCount: number;
 }

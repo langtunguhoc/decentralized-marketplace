@@ -26,7 +26,8 @@ export async function buyProduct(productId: number, priceWei: string) {
 export async function createProduct(
   priceEth: string,
   previewCid: string,
-  metadataCid: string,
+  productCid: string,   
+  encryptedKey: string, // <--- NEW PARAMETER
   contentType: string
 ) {
   const signer = await getSigner();
@@ -40,7 +41,8 @@ export async function createProduct(
   const tx = await marketplace.listProduct(
     ethers.parseEther(priceEth),
     previewCid,
-    metadataCid,
+    productCid,
+    encryptedKey, 
     contentType
   );
 
@@ -52,7 +54,8 @@ export async function updateListing(
   productId: number,
   priceEth: string,
   previewCid: string,
-  metadataCid: string,
+  productCid: string,
+  encryptedKey: string, // <--- NEW PARAMETER
   contentType: string,
   isActive: boolean
 ) {
@@ -68,7 +71,8 @@ export async function updateListing(
     productId,
     ethers.parseEther(priceEth),
     previewCid,
-    metadataCid,
+    productCid,
+    encryptedKey, 
     contentType,
     isActive
   );

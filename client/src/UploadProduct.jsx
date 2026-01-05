@@ -104,7 +104,7 @@ const UploadProduct = ({ contract }) => {
             <input type="file" onChange={e => setProduct(e.target.files[0])} />
         </div>
         <button onClick={handleUpload} disabled={loading} style={{ padding: "10px 20px" }}>
-            {loading ? "Encrypting & Uploading..." : "List Product"}
+            {loading ? "Encrypting & Uploading..." : "Create Product"}
         </button>
     </div>
   );
