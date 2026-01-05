@@ -72,7 +72,7 @@ export default function ProductCard({
           </button>
         ) : isSeller ? (
           <button disabled style={{ flex: 1, backgroundColor: "#fff3cd", color: "#856404", border: "1px solid #ffeeba" }}>
-            Your Listing
+            Your Product
           </button>
         ) : product.isActive ? (
           <button 
