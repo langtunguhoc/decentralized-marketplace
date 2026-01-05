@@ -5,7 +5,8 @@ import { marketplace } from "../services/marketplace";
 import { accessPass } from "../services/accessPass";
 import { getCurrentAddress } from "../services/wallet";
 import { buyProduct } from "../services/marketplaceWrite";
-// import type { Product } from "../types/Product"; // Optional: Use strict typing if desired
+import { getIpfsUrl } from "../services/ipfs";
+// import type { Product } from "../types/Product";
 
 export default function ProductDetail() {
   const { id } = useParams();
@@ -89,7 +90,7 @@ export default function ProductDetail() {
         {product.previewCid && (
            <div style={{textAlign: 'center', marginBottom: 20}}>
              <img 
-               src={`https://gateway.pinata.cloud/ipfs/${product.previewCid}`} 
+               src={getIpfsUrl(product.previewCid)} // <--- Updated to use Helper
                alt="Preview" 
                style={{maxWidth: "100%", maxHeight: 300, borderRadius: 4}}
              />

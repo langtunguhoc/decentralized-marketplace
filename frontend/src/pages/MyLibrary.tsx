@@ -8,6 +8,7 @@ import { accessPass } from "../services/accessPass";
 import { getCurrentAddress } from "../services/wallet";
 import { decryptFile } from "../services/lit";
 import { CONTRACTS } from "../config/contracts";
+import { getIpfsUrl } from "../services/ipfs";
 import type { Product } from "../types/Product";
 
 export default function MyLibrary() {
@@ -137,15 +138,31 @@ export default function MyLibrary() {
       {products.length === 0 && <p>You have not purchased any products yet.</p>}
 
       {products.map((p) => (
-        <div key={p.id} style={{ border: "1px solid #ccc", padding: 12, marginBottom: 12 }}>
-          <p><strong>ID:</strong> {p.id}</p>
-          <p><strong>Price Paid:</strong> {ethers.formatEther(p.price)} ETH</p>
-          <p><strong>Type:</strong> {p.contentType}</p>
-          <p><strong>Status:</strong> <span style={{color: 'green'}}>Access Granted</span></p>
+        <div key={p.id} style={{ border: "1px solid #ccc", padding: 12, marginBottom: 12, display: "flex", gap: "15px" }}>
+          
+          {/* ADD IMAGE BLOCK */}
+          <div style={{ width: "100px", height: "100px", flexShrink: 0 }}>
+             {p.previewCid ? (
+               <img 
+                 src={getIpfsUrl(p.previewCid)} 
+                 alt={`Product ${p.id}`} 
+                 style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "4px" }}
+               />
+             ) : (
+               <div style={{ width: "100%", height: "100%", background: "#eee" }} />
+             )}
+          </div>
 
-          <button onClick={() => handleViewContent(p)} disabled={decryptingId === p.id}>
-            {decryptingId === p.id ? "Decrypting..." : "View Content (Stream)"}
-          </button>
+          <div style={{ flexGrow: 1 }}>
+             <p><strong>ID:</strong> {p.id}</p>
+             <p><strong>Price Paid:</strong> {ethers.formatEther(p.price)} ETH</p>
+             <p><strong>Type:</strong> {p.contentType}</p>
+             <p><strong>Status:</strong> <span style={{color: 'green'}}>Access Granted</span></p>
+
+             <button onClick={() => handleViewContent(p)} disabled={decryptingId === p.id}>
+               {decryptingId === p.id ? "Decrypting..." : "View Content (Stream)"}
+             </button>
+          </div>
         </div>
       ))}
 

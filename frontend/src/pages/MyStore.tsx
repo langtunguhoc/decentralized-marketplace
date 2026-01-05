@@ -8,6 +8,7 @@ import { createProduct, updateListing } from "../services/marketplaceWrite";
 import { getCurrentAddress } from "../services/wallet";
 import { encryptFile } from "../services/lit";
 import { CONTRACTS } from "../config/contracts";
+import { getIpfsUrl } from "../services/ipfs";
 
 type Product = {
   seller: string;
@@ -210,17 +211,29 @@ export default function MyStore() {
 
       <h2>Your Products</h2>
       {products.map((p) => (
-        <div key={p.id} style={{ border: "1px solid #ccc", margin: "10px 0", padding: 10 }}>
-          <p><strong>ID:</strong> {p.id}</p>
-          <p><strong>Price:</strong> {ethers.formatEther(p.price)} ETH</p>
-          <p><strong>Status:</strong> {p.isActive ? "Active" : "Inactive"}</p>
-          <p><strong>Sales:</strong> {Number(p.soldCount)}</p>
+        <div key={p.id} style={{ border: "1px solid #ccc", margin: "10px 0", padding: 10, display: "flex", alignItems: "center", gap: "15px" }}>
           
-          <button onClick={() => toggleActive(p)} disabled={p.soldCount > 0n}>
-            {p.isActive ? "Deactivate" : "Activate"}
-          </button>
-          
-          {p.soldCount > 0n && <span style={{marginLeft: 10, color: 'red', fontSize: '0.8em'}}>Cannot update sold items</span>}
+          {/* ✅ ADD THIS IMAGE BLOCK */}
+          <img 
+             src={getIpfsUrl(p.previewCid)} 
+             alt="Preview" 
+             style={{ width: "60px", height: "60px", objectFit: "cover", borderRadius: "4px" }}
+          />
+
+          <div>
+            <p style={{margin: "0 0 5px 0"}}><strong>ID:</strong> {p.id}</p>
+            <p style={{margin: 0}}><strong>Price:</strong> {ethers.formatEther(p.price)} ETH</p>
+          </div>
+
+          <div style={{marginLeft: "auto", textAlign: "right"}}>
+             <p><strong>Status:</strong> {p.isActive ? "Active" : "Inactive"}</p>
+             <p><strong>Sales:</strong> {Number(p.soldCount)}</p>
+             
+             <button onClick={() => toggleActive(p)} disabled={p.soldCount > 0n}>
+               {p.isActive ? "Deactivate" : "Activate"}
+             </button>
+             {p.soldCount > 0n && <div style={{color: 'red', fontSize: '0.8em'}}>Cannot update sold items</div>}
+          </div>
         </div>
       ))}
     </div>
