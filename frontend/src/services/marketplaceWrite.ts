@@ -15,6 +15,7 @@ export async function buyProduct(productId: number, priceWei: string) {
 
   const tx = await marketplace.buyProduct(productId, {
     value: priceWei,
+    gasLimit: 300000
   });
 
   return tx.wait();

@@ -90,16 +90,23 @@ export default function MyLibrary() {
       // --------------------------------
 
       // 2. Decrypt
-      console.log("Debug Encrypted Key:", p.encryptedKey);
+      console.log("Debug Encrypted Key (Original):", p.encryptedKey);
+
+      // 🛡️ FIX: Remove "0x" prefix if it exists
+      const cleanKey = p.encryptedKey.startsWith("0x") 
+        ? p.encryptedKey.slice(2) 
+        : p.encryptedKey;
+
+      console.log("Debug Encrypted Key (Clean):", cleanKey);
+
       const decryptedBlob = await decryptFile(
         blob, 
-        p.encryptedKey,
+        cleanKey, // 👈 USE THIS CLEAN KEY
         "amoy",
         CONTRACTS.amoy.AccessPass,
         p.id,
         p.contentType 
       );
-
       // 3. Create Memory URL
       const url = URL.createObjectURL(decryptedBlob);
       
