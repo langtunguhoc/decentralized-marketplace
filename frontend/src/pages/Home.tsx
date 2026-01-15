@@ -83,10 +83,26 @@ export default function Home() {
         [p.id]: true,
       }));
 
-      alert("Purchase successful!");
+      alert("✅ Purchase successful!");
     } catch (e: any) {
       console.error("BUY ERROR (HOME):", e);
-      alert("Purchase failed. See console for details.");
+      
+      // Better error messages
+      if (e.code === "INSUFFICIENT_FUNDS") {
+        alert("❌ Insufficient balance to buy this product.");
+      } else if (e.code === 4001 || e.code === "ACTION_REJECTED") {
+        alert("❌ Transaction cancelled by user.");
+      } else if (e.message?.includes("Price changed")) {
+        alert("⚠️ Product price changed. Please try again.");
+      } else if (e.message?.includes("Not Active")) {
+        alert("⚠️ Product is no longer active.");
+      } else if (e.message?.includes("already own")) {
+        alert("ℹ️ You already own this product.");
+      } else if (e.message?.includes("after retries")) {
+        alert("❌ Purchase failed after multiple attempts. Product may have been sold. Please refresh and try again.");
+      } else {
+        alert("❌ Purchase failed. See console for details.");
+      }
     } finally {
       setBuyingId(null);
     }

@@ -61,14 +61,42 @@ const getAccessConditions = (chain: string, contractAddress: string, productId: 
 // 4. Helper: Convert Blob to Base64 (Required for Decryption)
 const blobToBase64 = (blob: Blob): Promise<string> => {
   return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      const result = reader.result as string;
-      const base64 = result.replace(/^data:.+;base64,/, '');
-      resolve(base64);
-    };
-    reader.onerror = reject;
-    reader.readAsDataURL(blob);
+    try {
+      const reader = new FileReader();
+      
+      reader.onloadend = () => {
+        try {
+          const result = reader.result as string;
+          if (!result) {
+            reject(new Error("FileReader returned empty result"));
+            return;
+          }
+          // Split properly to avoid infinite recursion
+          const parts = result.split(',');
+          const base64 = parts.length > 1 ? parts[1] : result;
+          resolve(base64);
+        } catch (err) {
+          reject(err);
+        }
+      };
+
+      reader.onerror = (e) => {
+        reject(new Error(`FileReader error: ${e}`));
+      };
+
+      reader.onabort = () => {
+        reject(new Error("FileReader aborted"));
+      };
+
+      // Abort any previous read
+      if (reader.readyState === 1) {
+        reader.abort();
+      }
+
+      reader.readAsDataURL(blob);
+    } catch (err) {
+      reject(err);
+    }
   });
 };
 

@@ -6,7 +6,8 @@ import { getSigner } from "./wallet";
 /* ========= BUY (BUYER) ========= */
 export async function buyProduct(
   productId: number,
-  priceWei: string
+  priceWei: string,
+  maxRetries: number = 3
 ) {
   const signer = await getSigner();
 
@@ -34,13 +35,74 @@ export async function buyProduct(
     signer
   );
 
-  /* FIX 3: TRUYỀN value LÀ BigInt, KHÔNG PHẢI STRING */
-  const tx = await marketplace.buyProduct(productId, {
-    value, // 👈 QUAN TRỌNG
-    gasLimit: 300_000
-  });
+  /* FIX 3: RETRY LOGIC CHO RACE CONDITION */
+  let lastError: any = null;
+  
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      console.log(`🔄 BUY ATTEMPT #${attempt}/${maxRetries}`);
 
-  return tx.wait();
+      /* TĂNG GAS LIMIT LÊN 500K (từ 300K) */
+      const tx = await marketplace.buyProduct(productId, {
+        value,
+        gasLimit: 500_000
+      });
+
+      console.log(`✅ TX SENT (attempt ${attempt}): ${tx.hash}`);
+      return tx.wait();
+
+    } catch (err: any) {
+      lastError = err;
+      console.error(`❌ ATTEMPT #${attempt} FAILED:`, err.message);
+
+      /* DECODE CONTRACT REVERT REASON */
+      if (err.data) {
+        try {
+          const decoded = marketplace.interface.parseError(err.data);
+          console.error(`📍 CONTRACT ERROR: ${decoded?.name || 'Unknown'}`);
+        } catch (e) {
+          console.error("Could not decode error");
+        }
+      }
+
+      /* NẾU LỖI KHÔNG PHẢI RACE CONDITION, THROW NGAY */
+      if (
+        err.message?.includes("Wrong value") ||
+        err.message?.includes("Seller cannot buy") ||
+        err.code === "INSUFFICIENT_FUNDS" ||
+        err.code === 4001
+      ) {
+        throw err;
+      }
+
+      /* NẾU ĐÃ HẾT LẦN RETRY, THROW */
+      if (attempt === maxRetries) {
+        throw lastError;
+      }
+
+      /* WAIT TRƯỚC KHI RETRY (exponential backoff) */
+      const delayMs = Math.min(1000 * Math.pow(2, attempt - 1), 5000);
+      console.log(`⏳ WAITING ${delayMs}ms BEFORE RETRY...`);
+      await new Promise(resolve => setTimeout(resolve, delayMs));
+
+      /* FETCH LẠI FRESH PRICE TRƯỚC KHI RETRY */
+      try {
+        const freshProduct = await marketplace.products(productId);
+        const freshPrice = freshProduct[1];
+        console.log(`📊 FRESH PRICE: ${freshPrice.toString()} wei`);
+        
+        if (freshPrice.toString() !== priceWei) {
+          const error = new Error(`Price changed: ${priceWei} → ${freshPrice.toString()}`);
+          (error as any).code = "PRICE_CHANGED";
+          throw error;
+        }
+      } catch (e) {
+        console.error("Error fetching fresh price:", e);
+      }
+    }
+  }
+
+  throw lastError || new Error("Buy failed after retries");
 }
 
 /* ========= SELLER ========= */
@@ -66,7 +128,8 @@ export async function createProduct(
     previewCid,
     productCid,
     encryptedKey,
-    contentType
+    contentType,
+    { gasLimit: 500000 }
   );
 
   return tx.wait();
@@ -97,7 +160,8 @@ export async function updateListing(
     productCid,
     encryptedKey,
     contentType,
-    isActive
+    isActive,
+    { gasLimit: 500000 }
   );
 
   return tx.wait();

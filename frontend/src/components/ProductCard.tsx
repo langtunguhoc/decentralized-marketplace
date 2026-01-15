@@ -16,73 +16,99 @@ export default function ProductCard({
   isOwned,
   onBuy,
 }: ProductCardProps) {
-  const isSeller = product.seller.toLowerCase() === currentAddress.toLowerCase();
+
+  const isSeller =
+    product.seller.toLowerCase() === currentAddress.toLowerCase();
+
+  /* ===== DEBUG BUY CLICK (QUAN TRỌNG) ===== */
+  function handleBuyClick() {
+    console.log("===== PRODUCT CARD BUY CLICK =====");
+    console.log("productId:", product.id);
+    console.log("price (wei):", product.price.toString());
+    console.log("price (eth):", ethers.formatEther(product.price));
+    console.log("seller:", product.seller);
+    console.log("buyer:", currentAddress);
+    console.log("isSeller:", isSeller);
+    console.log("isActive:", product.isActive);
+    console.log("soldCount:", product.soldCount);
+    console.log("=================================");
+
+    onBuy(product);
+  }
 
   return (
-    <div style={{ 
-      border: "1px solid #ddd", 
-      borderRadius: "8px", 
-      padding: "16px", 
-      marginBottom: "20px",
-      backgroundColor: "#fff",
-      boxShadow: "0 2px 5px rgba(0,0,0,0.05)"
-    }}>
-      {/* 🖼️ PREVIEW IMAGE SECTION (New Feature) */}
-      <div style={{ 
-        width: "100%", 
-        height: "200px", 
-        backgroundColor: "#f9f9f9", 
-        marginBottom: "15px",
-        borderRadius: "4px",
-        overflow: "hidden",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center"
-      }}>
+    <div
+      style={{
+        border: "1px solid #ddd",
+        borderRadius: "8px",
+        padding: "16px",
+        marginBottom: "20px",
+        backgroundColor: "#fff",
+      }}
+    >
+      {/* PREVIEW IMAGE */}
+      <div
+        style={{
+          width: "100%",
+          height: "200px",
+          backgroundColor: "#f9f9f9",
+          marginBottom: "15px",
+          borderRadius: "4px",
+          overflow: "hidden",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
         {product.previewCid ? (
-          <img 
-            src={getIpfsUrl(product.previewCid)} 
+          <img
+            src={getIpfsUrl(product.previewCid)}
             alt={`Product ${product.id}`}
-            style={{ width: "100%", height: "100%", objectFit: "cover" }} 
+            style={{ width: "100%", height: "100%", objectFit: "cover" }}
           />
         ) : (
           <span style={{ color: "#ccc" }}>No Preview</span>
         )}
       </div>
 
-      {/* 📝 INFO SECTION (From Old Code) */}
-      <h3 style={{ margin: "0 0 10px 0" }}>Product #{product.id}</h3>
-      
+      {/* INFO */}
+      <h3 style={{ margin: "0 0 10px 0" }}>
+        Product #{product.id}
+      </h3>
+
       <div style={{ fontSize: "0.9rem", color: "#555", marginBottom: "15px" }}>
-        <p style={{ margin: "5px 0" }}><strong>Price:</strong> {ethers.formatEther(product.price)} ETH</p>
-        <p style={{ margin: "5px 0" }}><strong>Sold:</strong> {product.soldCount}</p>
-        <p style={{ margin: "5px 0" }}><strong>Type:</strong> {product.contentType}</p>
-        <p style={{ margin: "5px 0" }}><strong>Seller:</strong> {isSeller ? "You" : `${product.seller.slice(0, 6)}...`}</p>
+        <p><strong>Price:</strong> {ethers.formatEther(product.price)} ETH</p>
+        <p><strong>Sold:</strong> {product.soldCount}</p>
+        <p><strong>Type:</strong> {product.contentType}</p>
+        <p>
+          <strong>Seller:</strong>{" "}
+          {isSeller ? "You" : `${product.seller.slice(0, 6)}...`}
+        </p>
       </div>
 
-      {/* 🔘 ACTION BUTTONS */}
+      {/* ACTIONS */}
       <div style={{ display: "flex", gap: "10px" }}>
         <Link to={`/product/${product.id}`} style={{ flex: 1 }}>
-          <button style={{ width: "100%", cursor: "pointer", padding: "8px" }}>Details</button>
+          <button style={{ width: "100%" }}>Details</button>
         </Link>
 
         {isOwned ? (
-          <button disabled style={{ flex: 1, backgroundColor: "#e0e0e0", color: "#555", cursor: "not-allowed" }}>
+          <button disabled style={{ flex: 1 }}>
             Owned
           </button>
         ) : isSeller ? (
-          <button disabled style={{ flex: 1, backgroundColor: "#fff3cd", color: "#856404", border: "1px solid #ffeeba" }}>
+          <button disabled style={{ flex: 1 }}>
             Your Product
           </button>
         ) : product.isActive ? (
-          <button 
-            onClick={() => onBuy(product)} 
-            style={{ flex: 1, backgroundColor: "#007bff", color: "white", border: "none", cursor: "pointer" }}
+          <button
+            onClick={handleBuyClick}   // <-- FIX: LOG + BUY
+            style={{ flex: 1 }}
           >
             Buy Now
           </button>
         ) : (
-          <button disabled style={{ flex: 1, backgroundColor: "#ccc", cursor: "not-allowed" }}>
+          <button disabled style={{ flex: 1 }}>
             Inactive
           </button>
         )}
