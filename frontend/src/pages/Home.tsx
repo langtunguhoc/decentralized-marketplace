@@ -11,6 +11,7 @@ export default function Home() {
   const [products, setProducts] = useState<Product[]>([]);
   const [currentAddress, setCurrentAddress] = useState<string>("");
   const [ownedMap, setOwnedMap] = useState<Record<number, boolean>>({});
+  const [buyingId, setBuyingId] = useState<number | null>(null); // FIX: tránh double-buy
 
   useEffect(() => {
     async function load() {
@@ -26,19 +27,15 @@ export default function Home() {
         for (let i = 1; i <= Number(total); i++) {
           const raw = await marketplace.products(i);
 
-          // Contract Struct:
-          // 0: seller, 1: price, 2: isActive, 3: previewCid
-          // 4: productCid, 5: encryptedKey, 6: contentType, 7: soldCount
-          
           const product: Product = {
             id: i,
             seller: raw[0],
-            price: raw[1],
+            price: raw[1],           // price is WEI (bigint)
             isActive: raw[2],
             previewCid: raw[3],
-            productCid: raw[4],      // Fixed mapping
-            encryptedKey: raw[5],    // Fixed mapping
-            contentType: raw[6],     // Fixed mapping
+            productCid: raw[4],
+            encryptedKey: raw[5],
+            contentType: raw[6],
             soldCount: Number(raw[7]),
           };
 
@@ -58,13 +55,40 @@ export default function Home() {
     load();
   }, []);
 
+  /* ================= BUY (FIXED) ================= */
   async function handleBuy(p: Product) {
+    if (buyingId === p.id) return; // FIX: chặn double click
+
     try {
-      await buyProduct(p.id, p.price.toString());
-      alert("Purchase successful! Check 'My Purchases'.");
-      window.location.reload();
-    } catch(e: any) {
-      alert("Purchase failed: " + e.message);
+      setBuyingId(p.id);
+
+      /* =================================================
+         FIX QUAN TRỌNG NHẤT:
+         - KHÔNG dùng p.price (cache)
+         - LUÔN lấy price MỚI NHẤT từ contract
+      ================================================= */
+      const fresh = await marketplace.products(p.id);
+      const freshPrice = fresh[1]; // on-chain price (wei)
+
+      console.log("HOME BUY DEBUG");
+      console.log("productId:", p.id);
+      console.log("cached price (wei):", p.price.toString());
+      console.log("fresh price (wei):", freshPrice.toString());
+
+      await buyProduct(p.id, freshPrice.toString());
+
+      /* FIX: update state, KHÔNG reload page */
+      setOwnedMap(prev => ({
+        ...prev,
+        [p.id]: true,
+      }));
+
+      alert("Purchase successful!");
+    } catch (e: any) {
+      console.error("BUY ERROR (HOME):", e);
+      alert("Purchase failed. See console for details.");
+    } finally {
+      setBuyingId(null);
     }
   }
 
@@ -87,7 +111,7 @@ export default function Home() {
           product={p}
           currentAddress={currentAddress}
           isOwned={ownedMap[p.id]}
-          onBuy={handleBuy}
+          onBuy={handleBuy} // FIXED handler
         />
       ))}
     </div>
