@@ -26,7 +26,6 @@ cd server
 npm install
 
 # 3. Cài đặt cho Frontend (Giao diện người dùng)
-# ⚠️ Lưu ý: Thư mục chứa code giao diện là 'frontend'
 cd frontend
 npm install
 
@@ -81,16 +80,16 @@ npx hardhat run scripts/deploy.js --network amoy
 > Sau khi deploy thành công, bạn **PHẢI COPY** file ABI và địa chỉ Contract mới vào thư mục `frontend`.
 > **Lệnh Copy (Windows - Command Prompt):**
 > ```cmd
-> copy artifacts\contracts\AccessPass.sol\AccessPass.json frontend\src\abi\
-> copy artifacts\contracts\Marketplace.sol\Marketplace.json frontend\src\abi\
+> copy artifacts\contracts\AccessPass.sol\AccessPass.json frontend\src\abis\
+> copy artifacts\contracts\Marketplace.sol\Marketplace.json frontend\src\abis\
 > 
 > ```
 > 
 > 
 > **Lệnh Copy (Mac/Linux):**
 > ```bash
-> cp artifacts/contracts/AccessPass.sol/AccessPass.json frontend/src/abi/
-> cp artifacts/contracts/Marketplace.sol/Marketplace.json frontend/src/abi/
+> cp artifacts/contracts/AccessPass.sol/AccessPass.json frontend/src/abis/
+> cp artifacts/contracts/Marketplace.sol/Marketplace.json frontend/src/abis/
 > 
 > ```
 > **copy địa chỉ trong addresses.json và đưa vào tương ứng trong /frontend/src/config/contracts.ts**

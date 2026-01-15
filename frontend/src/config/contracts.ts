@@ -1,6 +1,6 @@
 export const CONTRACTS = {
   amoy: {
-    Marketplace: "0xC3a166B1F99aF988679f9AA9fAFCD6f6F8Fe4143",
-    AccessPass: "0xcF15fE4C5670608EA821a29734ffb8b490Eee0A5",
+    Marketplace: "0x607eE7Bf55c6302B00239BEf294eBe5C68c0E2DE",
+    AccessPass: "0x4ceCfF2A9e639cFab6Bceb55Ff42E8eeA74de782",
   },
 };
