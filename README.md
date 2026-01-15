@@ -1,8 +1,3 @@
-Tất nhiên rồi. Dưới đây là file `README.md` đã được viết lại hoàn toàn bằng Tiếng Việt, cập nhật chính xác cấu trúc thư mục mới (đổi `client` thành `frontend`) và bổ sung lưu ý quan trọng về Gateway mà chúng ta vừa sửa.
-
-Bạn có thể copy nội dung bên dưới và lưu đè lên file `README.md` hiện tại.
-
-```markdown
 # 🛡️ Decentralized Secure Storage (Lit Protocol + IPFS)
 
 Dự án Ứng dụng Marketplace Phi tập trung: Sử dụng **Lit Protocol** để mã hóa dữ liệu, **IPFS** để lưu trữ phi tập trung, và **Smart Contract** trên mạng **Polygon Amoy** để quản lý quyền truy cập (Token Gated).
@@ -48,7 +43,7 @@ Bạn cần tạo 2 file `.env` tại các vị trí sau:
 Tạo file `.env` để cấu hình deploy Smart Contract lên mạng Amoy:
 
 ```env
-POLYGON_RPC_URL="[https://rpc-amoy.polygon.technology/](https://rpc-amoy.polygon.technology/)"
+POLYGON_RPC_URL="https://rpc-amoy.polygon.technology/"
 PRIVATE_KEY="dan_private_key_vi_metamask_cua_ban_vao_day"
 
 ```
@@ -60,7 +55,7 @@ Tạo file `.env` để cấu hình IPFS (Pinata).
 
 ```env
 PORT=3001
-PINATA_JWT=dan_pinata_jwt_token_cua_ban_vao_day
+PINATA_JWT=dan_pinata_jwt_token_da_lay_cua_ban_vao_day
 
 # ⚠️ QUAN TRỌNG VỀ GATEWAY:
 # - Nếu bạn có tài khoản trả phí (Dedicated Gateway): Điền domain của bạn (ví dụ: my-gateway.<mypinata>.cloud)
@@ -133,28 +128,29 @@ npm run dev
 
 1. **Thêm mạng thủ công:**
 * Mở MetaMask -> Add Network -> Manually.
-* **Network Name:** `Polygon Amoy Testnet`
-* **RPC URL:** `https://rpc-amoy.polygon.technology` hoặc đăng ký và sử dụng URL của alchemy polygon để đảm bảo tốc độ `https://polygon-amoy.g.alchemy.com/v2/<api>`
+* **Network Name:** `Amoy`
+* **RPC URL:** `https://rpc-amoy.polygon.technology` hoặc đăng ký và sử dụng URL của alchemy polygon để đảm bảo tốc độ `https://polygon-amoy.g.alchemy.com/v2/<api lay tu alchemy>`
 * **Chain ID:** `80002`
 * **Currency Symbol:** `POL`
 * **Block Explorer:** `https://amoy.polygonscan.com`
 
 
-2. **Lấy tiền Test (Faucet):**
+2. **Lấy tiền Testnet (Faucet):**
 * Vào [Polygon Faucet](https://faucet.polygon.technology/) hoặc [Chainlink Faucet](https://faucets.chain.link/polygon-amoy).
 * Dán địa chỉ ví để nhận **POL** miễn phí làm phí gas.
+* Hoặc truy cập discord của cộng đồng [Polygon Amoy](https://discord.com/invite/0xPolygonCommunity) để nhận trong channel pol-faucet.
 
 
 
 ---
 
-## ✅ 6. Kịch bản Test (Walkthrough)
+## 6. Kịch bản Test
 
 1. **Người bán (Seller):**
 * Kết nối ví (Mạng Amoy).
 * Vào **My Store** -> Tạo sản phẩm mới.
-* Chọn ảnh Preview (công khai) và File Sản phẩm (sẽ được mã hóa).
-* Bấm **List Product** -> Xác nhận trên MetaMask.
+* Chọn ảnh Preview (công khai) và File Sản phẩm (sẽ được mã hóa), giá.
+* Bấm **Create Product** -> Xác nhận trên MetaMask.
 
 
 2. **Người mua (Buyer):**
@@ -173,14 +169,14 @@ npm run dev
 
 ---
 
-## 🧹 Mẹo: Xóa dữ liệu cũ
+## Xóa dữ liệu cũ
 
 Nếu bạn muốn reset lại toàn bộ sản phẩm để làm mới dữ liệu demo:
 
 1. Xóa file `addresses.json` ở thư mục gốc.
 2. Chạy lại lệnh deploy ở **Bước 1**.
 3. Copy lại file JSON mới vào `frontend`.
-4. Reload lại trang web.
+4. Xóa cache của browser và reload lại trang web.
 
 ```
 
