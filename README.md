@@ -130,6 +130,7 @@ npm run dev
 * Mở MetaMask -> Add Network -> Manually.
 * **Network Name:** `Amoy`
 * **RPC URL:** `https://rpc-amoy.polygon.technology` hoặc đăng ký và sử dụng URL của alchemy polygon để đảm bảo tốc độ `https://polygon-amoy.g.alchemy.com/v2/<api lay tu alchemy>`
+hoặc `https://polygon-amoy.g.alchemy.com/v2/If8bQ1D4R0QW10X7p5Xz5` (tạm cho việc test)
 * **Chain ID:** `80002`
 * **Currency Symbol:** `POL`
 * **Block Explorer:** `https://amoy.polygonscan.com`
